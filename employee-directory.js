@@ -77,8 +77,8 @@ function viewAll() {
 function viewAllByDept() {
     connection.query("SELECT department.name AS Departments FROM department JOIN role ON department.id=role.department_id GROUP BY Departments ORDER BY Departments;", function (err, res) {
         if (err) throw err;
-        const depts = res.map(function (test) {
-            return test.Departments;
+        const depts = res.map(function (depts) {
+            return depts.Departments;
         });
         inquirer.prompt([
             {
@@ -88,33 +88,35 @@ function viewAllByDept() {
                 choices: depts
             }
         ]).then(function (data) {
-            connection.query("SELECT employee.id AS ID, employee.first_name AS FirstName, employee.last_name AS LastName, role.title AS Position, department.name AS Department, role.salary AS Salary, CONCAT(Manager.first_name, \" \", Manager.last_name) AS Manager FROM employee JOIN role ON employee.role_id=role.id JOIN department ON role.department_id=department.id LEFT JOIN employee AS Manager ON employee.manager_id=Manager.id WHERE department.name=? ORDER BY ID;", [data.viewDept], function (err, res) {
+            connection.query('SELECT employee.id AS ID, employee.first_name AS FirstName, employee.last_name AS LastName, role.title AS Position, department.name AS Department, role.salary AS Salary, CONCAT(Manager.first_name, " ", Manager.last_name) AS Manager FROM employee JOIN role ON employee.role_id=role.id JOIN department ON role.department_id=department.id LEFT JOIN employee AS Manager ON employee.manager_id=Manager.id WHERE department.name=? ORDER BY ID;', [data.viewDept], function (err, res) {
                 if (err) throw err;
                 console.log(res);
                 console.table(res);
                 start();
-            })
+            });
         });
     });
 }
 
 function viewAllByMgr() {
-    connection.query("SELECT department.name AS Departments FROM department JOIN role ON department.id=role.department_id GROUP BY Departments ORDER BY Departments;", function (err, res) {
+    connection.query('SELECT employee.manager_id, CONCAT(Manager.first_name, " ", Manager.last_name) AS Manager FROM employee JOIN employee AS Manager ON employee.manager_id=Manager.id GROUP BY Manager ORDER BY Manager;', function (err, res) {
         if (err) throw err;
-        const depts = res.map(function (test) {
-            return test.Departments;
+        const mgrRes = res;
+        const mgrs = mgrRes.map( (mgrs) => {
+            return mgrs.Manager;
         });
         inquirer.prompt([
             {
                 type: 'list',
-                message: 'Which department would you like to view?',
-                name: 'viewDept',
-                choices: depts
+                message: 'Which manager would you like to view?',               
+                name: 'viewMgrs',
+                choices: mgrs
             }
         ]).then(function (data) {
-            connection.query("SELECT employee.id AS ID, employee.first_name AS FirstName, employee.last_name AS LastName, role.title AS Position, department.name AS Department, role.salary AS Salary, CONCAT(Manager.first_name, \" \", Manager.last_name) AS Manager FROM employee JOIN role ON employee.role_id=role.id JOIN department ON role.department_id=department.id LEFT JOIN employee AS Manager ON employee.manager_id=Manager.id WHERE department.name=? ORDER BY ID;", [data.viewDept], function (err, res) {
+            console.log(mgrRes);
+            const currentMgr = mgrRes.filter(mgr => mgr.Manager === data.viewMgrs);   
+            connection.query('SELECT employee.id AS ID, employee.first_name AS FirstName, employee.last_name AS LastName, role.title AS Position, department.name AS Department, role.salary AS Salary, CONCAT(Manager.first_name, " ", Manager.last_name) AS Manager FROM employee JOIN role ON employee.role_id=role.id JOIN department ON role.department_id=department.id LEFT JOIN employee AS Manager ON employee.manager_id=Manager.id WHERE manager.id=? ORDER BY ID;', [currentMgr[0].manager_id], function (err, res) {
                 if (err) throw err;
-                console.log(res);
                 console.table(res);
                 start();
             })

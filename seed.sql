@@ -9,4 +9,4 @@ INSERT INTO role (title, salary, department_id) VALUES ("Chief Operations Office
 -- add employees
 INSERT INTO employee (first_name, last_name, role_id) VALUES ("Tom", "Hanks", 1), ("Anthony", "Hopkins", 4), ("Jack", "Nicholson", 7), ("Robin", "Williams", 10);
 
-INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ("Robert", "DeNiro", 2, 1), ("Tom", "Cruise", 3, 2), ("Julia", "Roberts", 3, 2), ("Denzel", "Washington", 5, 4), ("Susan", "Sarandon", 6, 5), ("Al", "Pacino", 6, 5), ("Meryl", "Streep", 8, 7), ("Jodie", "Foster", 9, 8), ("Mel", "Gibson", 9, 8), ("Michelle", "Pfeiffer", 11, 10), ("Winona", "Ryder", 11, 10), ("Bruce", "Willis", 12, 10), ("Morgan", "Freeman", 12, 10);
+INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ("Robert", "DeNiro", 2, 1), ("Tom", "Cruise", 3, 1), ("Julia", "Roberts", 3, 1), ("Denzel", "Washington", 5, 2), ("Susan", "Sarandon", 6, 2), ("Al", "Pacino", 6, 2), ("Meryl", "Streep", 8, 3), ("Jodie", "Foster", 9, 3), ("Mel", "Gibson", 9, 3), ("Michelle", "Pfeiffer", 11, 4), ("Winona", "Ryder", 11, 4), ("Bruce", "Willis", 12, 4), ("Morgan", "Freeman", 12, 4);

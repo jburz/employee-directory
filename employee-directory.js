@@ -136,32 +136,53 @@ function viewByMgr() {
 }
 
 function addEmployee() {
-    inquirer
-        .prompt([
-            {
-                type: 'input',
-                message: 'What is the employees first name?',
-                name: 'newFirstName'
-            },
-            {
-                type: 'input',
-                message: 'What is the employees last name?',
-                name: 'newLastName'
-            },
-            {
-                type: 'input',
-                message: 'What is their role?',
-                name: 'newRole'
-            },
-            {
-                type: 'input',
-                message: 'Who is their manager?',
-                name: 'newEmpMgr'
-            },
-        ]).then(function (data) {
-            console.log(data);
-            start();
+    let newEmpArr = [];
+    connection.query('SELECT * FROM role ORDER BY title', function (err, res) {
+        if (err) throw err;
+        const roleRes = res;
+        const roles = res.map(function (roles) {
+            return roles.title;
         });
+        inquirer
+            .prompt([
+                {
+                    type: 'input',
+                    message: 'What is the employees first name?',
+                    name: 'newFirstName'
+                },
+                {
+                    type: 'input',
+                    message: 'What is the employees last name?',
+                    name: 'newLastName'
+                },
+                {
+                    type: 'list',
+                    message: 'What is their role?',
+                    name: 'newRole',
+                    choices: roles
+                }
+            ]).then(function (data) {
+                const newEmp = roleRes.filter(role => role.title === data.newRole);
+                newEmpArr.push(data);
+                console.log(newEmpArr);
+                newEmpArr[0].role_id = newEmp[0].id;
+                console.log(newEmpArr);
+                // newEmp.push(data);
+                // console.log(newEmp);
+            });
+        // inquirer
+        //     .prompt([
+        //         {
+        //             type: 'input',
+        //             message: 'Who is their manager?',
+        //             name: 'newEmpMgr'
+        //         }
+        //     ]).then(function (data) {
+        //         newEmp.push(data);
+        //         console.log(newEmp);
+        //         start();
+        //     });
+    });
 }
 
 function removeEmployee() {

@@ -70,6 +70,7 @@ function viewAll() {
     connection.query("SELECT employee.id AS ID, employee.first_name AS FirstName, employee.last_name AS LastName, role.title AS Position, department.name AS Department, role.salary AS Salary, CONCAT(Manager.first_name, \" \", Manager.last_name) AS Manager FROM employee JOIN role ON employee.role_id=role.id JOIN department ON role.department_id=department.id LEFT JOIN employee AS Manager ON employee.manager_id=Manager.id ORDER BY ID;", function (err, res) {
         if (err) throw err;
         console.table(res);
+        console.log("-----------------------------------------------------------------------------------------------------------");
         start();
     })
 }
@@ -92,6 +93,7 @@ function viewAllByDept() {
                 if (err) throw err;
                 console.log(res);
                 console.table(res);
+                console.log("-----------------------------------------------------------------------------------------------------------");
                 start();
             });
         });
@@ -113,11 +115,11 @@ function viewAllByMgr() {
                 choices: mgrs
             }
         ]).then(function (data) {
-            console.log(mgrRes);
             const currentMgr = mgrRes.filter(mgr => mgr.Manager === data.viewMgrs);   
             connection.query('SELECT employee.id AS ID, employee.first_name AS FirstName, employee.last_name AS LastName, role.title AS Position, department.name AS Department, role.salary AS Salary, CONCAT(Manager.first_name, " ", Manager.last_name) AS Manager FROM employee JOIN role ON employee.role_id=role.id JOIN department ON role.department_id=department.id LEFT JOIN employee AS Manager ON employee.manager_id=Manager.id WHERE manager.id=? ORDER BY ID;', [currentMgr[0].manager_id], function (err, res) {
                 if (err) throw err;
                 console.table(res);
+                console.log("-----------------------------------------------------------------------------------------------------------");
                 start();
             })
         });

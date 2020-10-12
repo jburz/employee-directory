@@ -72,15 +72,23 @@ function viewAll() {
 }
 
 function viewAllByDept() {
-    connection.query("SELECT department.name AS Departments FROM department JOIN role ON department.id=role.department_id GROUP BY Departments;", function(err, res) {
+    connection.query("SELECT department.name AS Departments FROM department JOIN role ON department.id=role.department_id GROUP BY Departments ORDER BY Departments;", function(err, res) {
         if (err) throw err;
-        console.table(res);
-        start();
+        const depts = res.map(function(test) {
+            return test.Departments;
+        });
+        inquirer.prompt([
+            {
+                type: 'list',
+                message: 'Which department would you like to view?',
+                name: 'viewDept',
+                choices: depts
+            }
+        ]).then(function(data) {
+            console.table(data)
+            start();
+        });
     });
-    // inquirer
-    //     .prompt([
-
-    //     ])
 }
 
 function viewAllByMgr() {

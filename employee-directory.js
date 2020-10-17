@@ -85,6 +85,7 @@ function view() {
                     "Employees By Manager",
                     "Departments",
                     "Roles",
+                    "Budget",
                     "Back"
                 ]
             }
@@ -108,6 +109,10 @@ function view() {
 
                 case "Roles":
                     viewRoles();
+                    break;
+
+                case "Budget":
+                    viewBudget();
                     break;
 
                 case "Back":
@@ -219,7 +224,7 @@ function remove() {
 }
 
 function viewAll() {
-    connection.query('SELECT employee.id AS ID, employee.first_name AS FirstName, employee.last_name AS LastName, role.title AS Position, department.name AS Department, role.salary AS Salary, CONCAT(Manager.first_name, " ", Manager.last_name) AS Manager FROM employee JOIN role ON employee.role_id=role.id JOIN department ON role.department_id=department.id LEFT JOIN employee AS Manager ON employee.manager_id=Manager.id ORDER BY ID;', function (err, res) {
+    connection.query('SELECT employee.first_name AS FirstName, employee.last_name AS LastName, role.title AS Position, department.name AS Department, role.salary AS Salary, CONCAT(Manager.first_name, " ", Manager.last_name) AS Manager FROM employee JOIN role ON employee.role_id=role.id JOIN department ON role.department_id=department.id LEFT JOIN employee AS Manager ON employee.manager_id=Manager.id ORDER BY FirstName;', function (err, res) {
         if (err) throw err;
         console.table(res);
         console.log("-----------------------------------------------------------------------------------------------------------");
@@ -241,7 +246,7 @@ function viewByDept() {
                 choices: depts
             }
         ]).then(function (data) {
-            connection.query('SELECT employee.id AS ID, employee.first_name AS FirstName, employee.last_name AS LastName, role.title AS Position, department.name AS Department, role.salary AS Salary, CONCAT(Manager.first_name, " ", Manager.last_name) AS Manager FROM employee JOIN role ON employee.role_id=role.id JOIN department ON role.department_id=department.id LEFT JOIN employee AS Manager ON employee.manager_id=Manager.id WHERE department.name=? ORDER BY ID;', [data.viewDept], function (err, res) {
+            connection.query('SELECT employee.first_name AS FirstName, employee.last_name AS LastName, role.title AS Position, role.salary AS Salary, CONCAT(Manager.first_name, " ", Manager.last_name) AS Manager FROM employee JOIN role ON employee.role_id=role.id JOIN department ON role.department_id=department.id LEFT JOIN employee AS Manager ON employee.manager_id=Manager.id WHERE department.name=? ORDER BY FirstName;', [data.viewDept], function (err, res) {
                 if (err) throw err;
                 console.table(res);
                 console.log("-----------------------------------------------------------------------------------------------------------");
@@ -267,7 +272,7 @@ function viewByMgr() {
             }
         ]).then(function (data) {
             const currentMgr = mgrRes.filter(mgr => mgr.Manager === data.viewMgrs);
-            connection.query('SELECT employee.id AS ID, employee.first_name AS FirstName, employee.last_name AS LastName, role.title AS Position, department.name AS Department, role.salary AS Salary, CONCAT(Manager.first_name, " ", Manager.last_name) AS Manager FROM employee JOIN role ON employee.role_id=role.id JOIN department ON role.department_id=department.id LEFT JOIN employee AS Manager ON employee.manager_id=Manager.id WHERE manager.id=? ORDER BY ID;', [currentMgr[0].manager_id], function (err, res) {
+            connection.query('SELECT employee.first_name AS FirstName, employee.last_name AS LastName, role.title AS Position, department.name AS Department, role.salary AS Salary FROM employee JOIN role ON employee.role_id=role.id JOIN department ON role.department_id=department.id LEFT JOIN employee AS Manager ON employee.manager_id=Manager.id WHERE manager.id=? ORDER BY FirstName;', [currentMgr[0].manager_id], function (err, res) {
                 if (err) throw err;
                 console.table(res);
                 console.log("-----------------------------------------------------------------------------------------------------------");
@@ -278,7 +283,7 @@ function viewByMgr() {
 }
 
 function viewDepts() {
-    connection.query('SELECT * FROM department', function (err, res) {
+    connection.query('SELECT name FROM department', function (err, res) {
         if (err) throw err;
         console.table(res);
         console.log("-----------------------------------------------------------------------------------------------------------");
@@ -287,10 +292,18 @@ function viewDepts() {
 }
 
 function viewRoles() {
-    connection.query('SELECT * FROM role', function (err, res) {
+    connection.query('SELECT role.title, role.salary, department.name FROM role JOIN department on role.department_id WHERE role.department_id = department.id;', function (err, res) {
         if (err) throw err;
         console.table(res);
         console.log("-----------------------------------------------------------------------------------------------------------");
+        view();
+    });
+}
+
+function viewBudget() {
+    connection.query('SELECT department.name AS Department, sum(role.salary) AS Budget FROM role JOIN department ON role.department_id WHERE role.department_id = department.id GROUP BY Department ORDER BY Budget;', function (err, res) {
+        if (err) throw err;
+        console.table(res);
         view();
     });
 }
@@ -353,7 +366,7 @@ function addEmployee() {
 }
 
 function addRole() {
-    connection.query("SELECT * FROM department;", function (err, res) {
+    connection.query("SELECT * FROM department ORDER BY name;", function (err, res) {
         if (err) throw err;
         inquirer
             .prompt([
@@ -377,8 +390,8 @@ function addRole() {
                 const currentDept = res.filter(dept => dept.name === data.dept);
                 connection.query("INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)", [data.newRole, data.newSalary, currentDept[0].id], function (err, res) {
                     if (err) throw err;
+                    console.log(data.newRole + ' has been added to ' + data.dept + ' with a salary of ' + data.newSalary + '.');
                     add();
-
                 });
             });
     });
@@ -479,7 +492,7 @@ function updateMgr() {
 }
 
 function removeDept() {
-    connection.query('SELECT * from department', function (err, res) {
+    connection.query('SELECT * from department ORDER BY name', function (err, res) {
         if (err) throw err;
         const depts = res.map(dept => dept.name);
         inquirer
@@ -493,7 +506,11 @@ function removeDept() {
             ]).then(function (data) {
                 const currentDept = res.filter(dept => dept.name === data.dept);
                 connection.query("DELETE FROM department WHERE id = ?", [currentDept[0].id], function (err, res) {
-                    if (err) throw err;
+                    if (err) {
+                        console.log("-----------------------------------------------------------------------------------------------------------");
+                        console.log("Please remove all roles from this department before deleting.");
+                        console.log("-----------------------------------------------------------------------------------------------------------");
+                    }
                     console.log("Deleted!");
                     remove();
                 });
@@ -526,7 +543,7 @@ function removeEmployee() {
 }
 
 function removeRole() {
-    connection.query('SELECT * from role', function (err, res) {
+    connection.query('SELECT * from role ORDER BY title', function (err, res) {
         if (err) throw err;
         const roles = res.map(role => role.title);
         inquirer
@@ -539,10 +556,14 @@ function removeRole() {
                 }
             ]).then(function (data) {
                 const currentRole = res.filter(role => role.title === data.role);
-                console.log(currentRole);
                 connection.query("DELETE FROM role WHERE id = ?", [currentRole[0].id], function (err, res) {
-                    if (err) throw err;
-                    console.log("Deleted!");
+                    if (err) {
+                        console.log("-----------------------------------------------------------------------------------------------------------");
+                        console.log("Please update any employee with this role before deleting.");
+                        console.log("-----------------------------------------------------------------------------------------------------------");
+                    } else {
+                        console.log("Deleted!");
+                    }
                     remove();
                 });
             });

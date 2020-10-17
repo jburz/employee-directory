@@ -438,12 +438,44 @@ function updateRole() {
                         });
                 });
             });
-    })
+    });
 }
 
 function updateMgr() {
-    console.log('update manager');
-    update();
+    connection.query('SELECT id, concat(first_name, " ", last_name) AS fullName FROM employee ORDER BY first_name;', function (err, res) {
+        if (err) throw err;
+        inquirer
+            .prompt([
+                {
+                    type: 'list',
+                    message: 'Which employee would you like to update?',
+                    name: 'employee',
+                    choices: res.map((emp) => emp.fullName)
+                }
+            ]).then(function (data) {
+                let currentEmp = res.filter(id => id.fullName === data.employee);
+                connection.query('SELECT employee.manager_id, CONCAT(Manager.first_name, " ", Manager.last_name) AS Manager FROM employee JOIN employee AS Manager ON employee.manager_id=Manager.id GROUP BY Manager ORDER BY Manager;', function (err, res) {
+                    if (err) throw err;
+                    const mgrs = res.map(mgr => mgr.Manager);
+                    inquirer
+                        .prompt([
+                            {
+                                type: 'list',
+                                message: 'Please choose a new manager:',
+                                name: 'newMgr',
+                                choices: mgrs
+                            }
+                        ]).then(function (data) {
+                            currentMgr = res.filter(id => id.Manager === data.newMgr);
+                            connection.query("UPDATE employee SET manager_id = ? WHERE id = ?", [currentMgr[0].manager_id, currentEmp[0].id], function (err, res) {
+                                if (err) throw err;
+                                console.log('Success!');
+                                update();
+                            });
+                        });
+                });
+            });
+    });
 }
 
 function removeDept() {
@@ -516,3 +548,6 @@ function removeRole() {
             });
     });
 }
+
+
+

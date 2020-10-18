@@ -522,7 +522,6 @@ function removeEmployee() {
     connection.query('SELECT id, concat(first_name, " ", last_name) AS name from employee ORDER BY name', function (err, res) {
         if (err) throw err;
         const employees = res.map(employee => employee.name);
-        console.log(employees);
         inquirer
             .prompt([
                 {

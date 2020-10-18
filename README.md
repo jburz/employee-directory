@@ -1,10 +1,11 @@
 # employee-directory   ![License Badge](https://img.shields.io/badge/License-MIT-blue)
 ## Description  
-This is a CLI command app that allows you to create and store and employee directory.
+This is a CLI command app that allows you to create and store an employee directory for your business.
 <br>
 
 ## Table of Contents
   * [Description](#Description)
+  * [Screenshots](#Screenshot)
   * [Installation](#Installation)
   * [Usage](#Usage)
   * [License](#License)
@@ -13,12 +14,15 @@ This is a CLI command app that allows you to create and store and employee direc
   * [Questions](#Questions)
 <br>
 
+## Screenshot
+![gif of cli app](./assets/demo.gif)
+
 ## Installation
 Download the repo from github.  Run npm i inyour root directory to install any dependencies.  Run npm start to start the app.
 <br>
 
 ## Usage
-Use this app to track the departments, roles and employees in your company.  You can view view, add, update or delete any of those categories.  
+Use this app to track the departments, roles, employees and managers in your company.  You can view, add, update or delete any of those categories by following the command list prompts.
 <br>
 
 ## License
